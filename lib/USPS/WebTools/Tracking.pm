@@ -53,15 +53,15 @@ sub track_request {
 sub track_field_request {
   my ($self, %args) = @_;
 
-  croak "No tracking IDs provided." unless scalar @$args{track_ids};
-  croak "More than 10 tracking IDs provided." unless scalar @$args{track_ids} <= 10;
+  croak "No tracking IDs provided." unless scalar @{ $args{track_ids} };
+  croak "More than 10 tracking IDs provided." unless scalar @{ $args{track_ids} } <= 10;
 
   my $dom = $self->_create_base_document('TrackFieldRequest');
   my $root = $dom->documentElement();
 
   if($args{revision} && $args{revision} == 1) {
     my $elem = $dom->createElement('Revision');
-    $elem->appendTextNode($args{revision})
+    $elem->appendTextNode($args{revision});
 
     $root->appendChild($elem);
 
@@ -91,7 +91,7 @@ sub track_field_request {
     croak "Invalid source id zip code value."
   }
 
-  foreach my $track_id (@track_ids) {
+  foreach my $track_id (@{ $args{track_ids} }) {
     my $elem = $dom->createElement('TrackID');
     $elem->setAttribute('ID', $track_id);
 
