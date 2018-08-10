@@ -81,6 +81,16 @@ sub track_field_request {
     croak "Invalid revision value."
   }
 
+  if($args{source_id_zip} && $args{source_id_zip} =~ /^[0-9]{5}$/) {
+    my $elem = $dom->createElement('SourceidZIP');
+    $elem->appendTextNode($args{source_id_zip});
+
+    $root->appendChild($elem)
+  }
+  elsif($args{source_id_zip}) {
+    croak "Invalid source id zip code value."
+  }
+
   foreach my $track_id (@track_ids) {
     my $elem = $dom->createElement('TrackID');
     $elem->setAttribute('ID', $track_id);
