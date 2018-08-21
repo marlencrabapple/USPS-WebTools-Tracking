@@ -65,14 +65,19 @@ sub track_field_request {
 
     $root->appendChild($elem);
 
-    $elem = $dom->createElement('Clientip');
+    $elem = $dom->createElement('ClientIp');
     $elem->appendTextNode(_get_ip());
 
     $root->appendChild($elem);
 
-    croak "No source id provided." unless $args{source_id};
+    if($args{source_id}) {
+      croak "Invalid source id provided." unless $args{source_id} =~ /^[a-z0-9]+$/i
+    }
+    else {
+      croak "No source id provided."
+    }
 
-    $elem = $dom->createElement('Sourceid');
+    $elem = $dom->createElement('SourceId');
     $elem->appendTextNode($args{source_id});
 
     $root->appendChild($elem)
@@ -82,7 +87,7 @@ sub track_field_request {
   }
 
   if($args{source_id_zip} && $args{source_id_zip} =~ /^[0-9]{5}$/) {
-    my $elem = $dom->createElement('SourceidZIP');
+    my $elem = $dom->createElement('SourceIdZIP');
     $elem->appendTextNode($args{source_id_zip});
 
     $root->appendChild($elem)
