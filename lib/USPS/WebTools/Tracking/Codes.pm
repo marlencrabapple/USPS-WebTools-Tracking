@@ -7,13 +7,14 @@ use Readonly;
 
 use Exporter 'import';
 
-our @EXPORT_OK = qw(name_to_code code_to_name code_is_return_to_sender name_is_return_to_sender);
+our @EXPORT_OK = qw(name_to_code code_to_name code_is_return_to_sender name_is_return_to_sender); 
+our %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
 
 #
 # USPS Tracking Code/Name Lookup Tables
 #
 
-Readonly my %return_to_sender => (
+Readonly our %return_to_sender => (
   return_to_sender => '09',
   return_to_sender_no_such_number => '21',
   return_to_sender_insufficient_address => '22',
@@ -27,12 +28,12 @@ Readonly my %return_to_sender => (
   return_to_sender_not_picked_up => '31'
 );
 
-Readonly my %name_to_code => (
-  manifest_acknowledgement => 'ma',
-  out_for_delivery => 'of',
-  sorting_processing_complete => 'pc',
+Readonly our %name_to_code => (
+  manifest_acknowledgement => 'MA',
+  out_for_delivery => 'OF',
+  sorting_processing_complete => 'PC',
   delivered => '01',
-  delivery_status_not_updated => 'dx',
+  delivery_status_not_updated => 'DX',
   attempted_notice_left => '02',
   notice_left => '52',
   receptacle_blocked => '53',
@@ -40,7 +41,7 @@ Readonly my %name_to_code => (
   no_secure_location_available => '55',
   no_authorized_recipient_available => '56',
   accept_or_pickup_by_carrier => '03',
-  truck_manifest_shipment_acceptance => 'tm',
+  truck_manifest_shipment_acceptance => 'TM',
   refused => '04',
   undeliverable_as_addressed => '05',
   forwarded => '06',
@@ -48,7 +49,7 @@ Readonly my %name_to_code => (
   missent => '08',
   %return_to_sender,
   processed => '10',
-  passive_acceptance_shipment_acceptance => 'pa',
+  passive_acceptance_shipment_acceptance => 'PA',
   dead_letter => '11',
   arrival_at_pickup_point => '14',
   mis_shipped => '15',
@@ -67,11 +68,9 @@ Readonly my %name_to_code => (
   departed_post_office => 'SF'
 );
 
-my %code_to_name => map {
-  $name_to_code{$_} => $_
+Readonly::Hash our %code_to_name => map {
+  $name_to_code{$_}, $_
 } keys %name_to_code;
-
-Readonly::Hash %code_to_name;
 
 sub name_to_code {
   my $name = shift;
