@@ -14,7 +14,7 @@ our %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
 # USPS Tracking Code/Name Lookup Tables
 #
 
-Readonly our %return_to_sender => (
+Readonly our %name_to_code_return_to_sender => (
   return_to_sender => '09',
   return_to_sender_no_such_number => '21',
   return_to_sender_insufficient_address => '22',
@@ -27,6 +27,10 @@ Readonly our %return_to_sender => (
   return_to_sender_other => '29',
   return_to_sender_not_picked_up => '31'
 );
+
+Readonly our %code_to_name_return_to_sender => map {
+  $name_to_code_return_to_sender{$_}, $_
+} keys %name_to_code_return_to_sender;
 
 Readonly our %name_to_code => (
   manifest_acknowledgement => 'MA',
@@ -84,12 +88,12 @@ sub code_to_name {
 
 sub code_is_return_to_sender {
   my $code = shift;
-  return 1 if $return_to_sender{$code}
+  return 1 if $code_to_name_return_to_sender{$code}
 }
 
 sub name_is_return_to_sender {
   my $name = shift;
-  return 1 if $return_to_sender{$name}
+  return 1 if $name_to_code_return_to_sender{$name}
 }
 
 1;
