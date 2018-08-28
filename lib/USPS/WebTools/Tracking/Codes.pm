@@ -51,7 +51,7 @@ Readonly our %name_to_code => (
   forwarded => '06',
   arrival_at_unit => '07',
   missent => '08',
-  %return_to_sender,
+  %name_to_code_return_to_sender,
   processed => '10',
   passive_acceptance_shipment_acceptance => 'PA',
   dead_letter => '11',
