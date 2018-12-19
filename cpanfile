@@ -1,5 +1,6 @@
 requires 'Carp';
 requires 'Socket';
+requires 'Readonly';
 requires 'Net::Domain';
 requires 'URI::Escape';
 requires 'XML::LibXML';
