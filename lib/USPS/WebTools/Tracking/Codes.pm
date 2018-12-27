@@ -70,7 +70,8 @@ Readonly our %codes => (
   '82' => 'Departed Shipping Partner Facility',
   'EF' => 'Departed Sort Facility',
   'SF' => 'Departed Post Office',
-  '71' => 'Rescheduled to Next Delivery Day'
+  '71' => 'Rescheduled to Next Delivery Day',
+  '30' => 'Delivery Attempted - No Access to Delivery Location'
 );
 
 sub code_to_description {
