@@ -3,8 +3,6 @@ package USPS::WebTools::Tracking::Codes;
 use strict;
 use warnings;
 
-use Readonly;
-
 use Exporter 'import';
 
 our @EXPORT_OK = qw(code_to_description code_is_return_to_sender code_is_attempted_notice_left); 
@@ -14,7 +12,7 @@ our %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
 # USPS Tracking Code/Name Lookup Tables
 #
 
-Readonly our %return_to_sender => (
+our %return_to_sender = (
   '09' => 'Return to Sender',
   '21' => 'No Such Number',
   '22' => 'Insufficient Address',
@@ -28,7 +26,7 @@ Readonly our %return_to_sender => (
   '31' => 'Not Picked Up'
 );
 
-Readonly our %attempted_notice_left => (
+our %attempted_notice_left = (
   '02' => 'Attempted / Notice Left',
   '52' => 'Notice Left',
   '53' => 'Receptacle Blocked',
@@ -37,9 +35,10 @@ Readonly our %attempted_notice_left => (
   '56' => 'No Authorized Recipient Available'
 );
 
-Readonly our %codes => (
+our %codes = (
   %return_to_sender,
   %attempted_notice_left,
+
   'MA' => 'Manifest Acknowledgement',
   'OF' => 'Out for Delivery',
   'PC' => 'Sorting / Processing Complete',
