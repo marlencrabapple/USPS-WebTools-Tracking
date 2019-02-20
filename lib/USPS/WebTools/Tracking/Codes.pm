@@ -1,5 +1,7 @@
 package USPS::WebTools::Tracking::Codes;
 
+use v5.28;
+
 use strict;
 use warnings;
 

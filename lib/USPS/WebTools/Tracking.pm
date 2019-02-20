@@ -1,5 +1,7 @@
 package USPS::WebTools::Tracking;
 
+use v5.28;
+
 use strict;
 use warnings;
 
@@ -11,20 +13,13 @@ use Carp qw(croak);
 use Net::Domain qw(hostfqdn);
 use HTTP::Request::Common qw(GET POST);
 
-our $stg_uri = 'https://stg-secure.shippingapis.com/ShippingAPI.dll?API=TrackV2&XML=';
-our $secure_uri = 'https://secure.shippingapis.com/ShippingAPI.dll?API=TrackV2&XML=';
-
-our $ua = LWP::UserAgent->new();
+our $ua = LWP::UserAgent->new;
 
 sub new {
   my ($class, %args) = @_;
 
   croak "No username provided." unless $args{username};
   croak "No password provided." unless $args{password};
-
-  $args{api_uri} = $args{test_mode} && $args{test_mode} == 1
-    ? $stg_uri
-    : $secure_uri;
 
   return bless \%args, $class
 }
@@ -36,7 +31,7 @@ sub track_request {
   croak "More than 10 tracking IDs provided." unless scalar @track_ids <= 10;
 
   my $dom = $self->_create_base_document('TrackRequest');
-  my $root = $dom->documentElement();
+  my $root = $dom->documentElement;
 
   foreach my $track_id (@track_ids) {
     my $elem = $dom->createElement('TrackID');
@@ -45,7 +40,7 @@ sub track_request {
     $root->appendChild($elem)
   }
 
-  my $req = GET $self->{api_uri} . uri_escape_utf8($dom->toString());
+  my $req = GET $self->_build_request_uri('TrackV2', $dom);
 
   return $self->_send_request($req)
 }
@@ -53,11 +48,11 @@ sub track_request {
 sub track_field_request {
   my ($self, %args) = @_;
 
-  croak "No tracking IDs provided." unless scalar @{ $args{track_ids} };
-  croak "More than 10 tracking IDs provided." unless scalar @{ $args{track_ids} } <= 10;
+  croak "No tracking IDs provided." unless scalar $args{track_ids}->@*;
+  croak "More than 10 tracking IDs provided." unless scalar $args{track_ids}->@* <= 10;
 
   my $dom = $self->_create_base_document('TrackFieldRequest');
-  my $root = $dom->documentElement();
+  my $root = $dom->documentElement;
 
   if($args{revision} && $args{revision} == 1) {
     my $elem = $dom->createElement('Revision');
@@ -96,7 +91,7 @@ sub track_field_request {
     croak "Invalid source id zip code value."
   }
 
-  foreach my $track_id (@{ $args{track_ids} }) {
+  foreach my $track_id ($args{track_ids}->@*) {
     my $elem = $dom->createElement('TrackID');
     $elem->setAttribute('ID', $track_id);
 
@@ -123,9 +118,49 @@ sub track_field_request {
     croak "Mailing date value not in YYYY-MM-DD form."
   }
 
-  my $req = GET $self->{api_uri} . uri_escape_utf8($dom->toString());
+  my $req = GET $self->_build_request_uri('TrackV2', $dom);
 
   return $self->_send_request($req)
+}
+
+sub proof_of_delivery_request {
+  my ($self, %args) = @_;
+
+  my $dom = $self->_create_base_document('PTSPodRequest');
+  my $root = $dom->documentElement;
+
+  # This is a really stupid way of getting around the fact that I should refractor
+  # the whole library to use the actual element names in the USPS docs
+  my %required = qw(mp suffix mp date track id first name last name table code);
+
+  foreach my $key (keys %required) {
+    my $arg_key = join '_', ($key, $required{$key});
+    my $dom_key = join '', (ucfirst $key, ucfirst $required{$key});
+
+    croak "Missing $arg_key." unless $args{$arg_key};
+
+    my $elem = $dom->createElement($dom_key);
+    $elem->appendTextNode($args{$arg_key});
+    
+    $root->appendChild($elem)
+  }
+
+  my $req = GET $self->_build_request_uri('PTSPod', $dom);
+
+  return $self->_send_request($req)
+}
+
+sub _build_request_uri {
+  my ($self, $api, $dom) = @_;
+
+  croak 'No API path given' unless $api;
+  croak 'No XML::LibXML::Document given.' unless $dom;
+
+  my $uri = 'https://';
+  $uri .= $self->{test_mode} ? 'stg-secure' : 'secure';
+  $uri .= ".shippingapis.com/ShippingAPI.dll?API=$api&XML=" . uri_escape_utf8($dom->toString);
+
+  return $uri
 }
 
 sub _create_base_document {
