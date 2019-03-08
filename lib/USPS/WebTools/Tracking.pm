@@ -123,29 +123,77 @@ sub track_field_request {
   return $self->_send_request($req)
 }
 
-sub proof_of_delivery_request {
+ sub proof_of_delivery_request {
   my ($self, %args) = @_;
 
   my $dom = $self->_create_base_document('PTSPodRequest');
   my $root = $dom->documentElement;
 
-  # This is a really stupid way of getting around the fact that I should refractor
-  # the whole library to use the actual element names in the USPS docs
-  my %required = qw(mp suffix mp date track id first name last name table code);
+  if($args{RequestType}) {
+    if($args{RequestType} eq 'Email') {
+      croak "Missing Email1." unless $args{Email1}
+    }
+    elsif($args{RequestType} eq 'Fax') {
+      croak "Missing FaxNumber." unless $args{FaxNumber}
+    }
+    elsif($args{RequestType} eq 'Mail') {
+      my @fields = qw(AddressLine1 AddressLine2 City State Zip);
+      @fields = grep { !$args{$_} } @fields;
 
-  foreach my $key (keys %required) {
-    my $arg_key = join '_', ($key, $required{$key});
-    my $dom_key = join '', (ucfirst $key, ucfirst $required{$key});
+      croak "Missing: " . join ',', @fields . '.' if scalar @fields;
+    }
+    else {
+      croak "Invalid RequestType."
+    }
+  }
+  else {
+    croak "Missing RequestType."
+  }
 
-    croak "Missing $arg_key." unless $args{$arg_key};
+  my @ordered = qw(TrackId ClientIp MpSuffix MpDate RequestType FirstName LastName Email1 Email2 Email3
+    FaxNumber AddressLine1 AddressLine2 City State Zip VerifyAddress TableCode CustRegID);
 
-    my $elem = $dom->createElement($dom_key);
-    $elem->appendTextNode($args{$arg_key});
-    
-    $root->appendChild($elem)
+  my @required = (0, 2, 3, 4, 5, 6, 17);
+
+  foreach my $key (@ordered) {
+    if($args{$key}) {
+      my $elem = $dom->createElement($key);
+      $elem->appendTextNode($args{$key});
+      
+      $root->appendChild($elem)
+    }
+    elsif(grep { $key eq $_ } @ordered[@required]) {
+      croak "Missing $key."
+    }
   }
 
   my $req = GET $self->_build_request_uri('PTSPod', $dom);
+
+  return $self->_send_request($req)
+}
+
+sub return_reciept_electronic_request {
+  my ($self, %args) = @_;
+
+  my $dom = $self->_create_base_document('PTSRreRequest');
+  my $root = $dom->documentElement;
+
+  my @ordered = qw(TrackId ClientIp MpSuffix MpDate FirstName LastName Email1 Email2 Email3 TableCode CustRegId);
+  my @required = (0, 2, 3, 4, 5, 6, 9);
+
+  foreach my $key (@ordered) {
+    if($args{$key}) {
+      my $elem = $dom->createElement($key);
+      $elem->appendTextNode($args{$key});
+
+      $root->appendChild($elem)
+    }
+    elsif(grep { $key eq $_ } @ordered[@required]) {
+      croak "Missing `$key`."
+    }
+  }
+
+  my $req = GET $self->_build_request_uri('PTSRre', $dom);
 
   return $self->_send_request($req)
 }
