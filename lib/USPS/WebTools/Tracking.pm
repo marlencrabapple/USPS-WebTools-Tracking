@@ -172,7 +172,7 @@ sub track_field_request {
   return $self->_send_request($req)
 }
 
-sub return_reciept_electronic_request {
+sub return_receipt_electronic_request {
   my ($self, %args) = @_;
 
   my $dom = $self->_create_base_document('PTSRreRequest');
